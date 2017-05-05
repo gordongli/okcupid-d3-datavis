@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<head>
+<meta charset="utf-8">
+<style>
+
+.axis--x path {
+  /*display: none;*/
+}
+
+.line {
+  fill: none;
+  /*stroke: steelblue;*/
+  /*stroke-width: 1.5px;*/
+  stroke-width: 0.75px;
+}
+
+
+.title { font-size: 10px; font-family: sans-serif; font-weight: bold;}
+/*svg { border: solid 1px #333; margin: 0px;}*/
+* {text-align: center;}
+
+.area { opacity: 0.5; }
+.points circle { opacity : 0.75; }
+.point text { font-family: sans-serif; visibility: hidden;}
+
+.hover text {
+  visibility: visible;
+}
+
+.hover circle {
+  stroke: black;
+  stroke-width: 0.5px;
+}
+
+</style>
+<script src="//d3js.org/d3.v4.min.js"></script>
+
+</head>
+<body>
+</body>
+
+<script>
+
+// var margin = {top: 20, right: 80, bottom: 30, left: 50};
+var margin = {top: 20, right: 20, bottom: 20, left: 50};
+var svgWidth = 360;
+var svgHeight = 160;
+var width = svgWidth - margin.left - margin.right;
+var height = svgHeight - margin.top - margin.bottom;
+
+
+var x = d3.scaleLinear().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    z = d3.scaleOrdinal(["rgb(215,61,61)", "rgb(56,109,164)"]);
+    r = d3.scaleSqrt().range([1, 7]);
+
+
+var line = d3.line()
+    // .curve(d3.curveLinear)
+    // .curve(d3.curveBasis)
+    .curve(d3.curveCatmullRom)
+    // .curve(d3.curveMonotoneX)
+    .x(function(d) { return x(d.age); })
+    .y(function(d) { return y(d.income); });
+
+var area = d3.area()
+    .curve(d3.curveCatmullRom)
+    // .curve(d3.curveLinear)
+    // .curve(d3.curveNatural)
+    .x(function(d) { return x(d.age); })
+    .y0(function(d) { return y(d.income) - r(d.profiles); })
+    .y1(function(d) { return y(d.income) + r(d.profiles); });
+
+
+d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
+  if (error) throw error;
+
+  console.log("data", data);
+  // var femaleProfiles = data.forEach(function(d) { console.log(d.f_numprofiles); });
+  var femaleProfilesMax = d3.max(data, function(d) { return d.f_numprofiles; });
+  var maleProfilesMax = d3.max(data, function(d) { return d.m_numprofiles; });
+  var profilesMax = Math.max(femaleProfilesMax, maleProfilesMax);
+  console.log(profilesMax);
+  // radiusDomain = d3.max(data.f_numprofiles);
+
+  var data = d3.nest()
+    .key(function(d) { return d.Job; })
+    .entries(data);
+  console.log("nested data", data);
+
+  x.domain([18, 69]);
+  y.domain([0, 250000]);
+  z.domain(["female", "male"]);
+  r.domain([1, profilesMax]).nice();
+  // console.log(r.domain());
+
+  data.forEach(function(c, i) {
+    c.line_data = [ { id: "female", values: [] }, { id: "male", values: [] } ];
+    c.values.forEach(function(d) {
+      if (d.f_numprofiles != 0) {
+        c.line_data[0].values.push({
+          age: d.Age,
+          income: d.f_medincome,
+          profiles: d.f_numprofiles
+        });
+      }
+      if (d.m_numprofiles != 0) {
+        c.line_data[1].values.push({
+          age: d.Age,
+          income: d.m_medincome,
+          profiles: d.m_numprofiles
+        });
+      }
+    })
+  });
+
+  console.log("data with line_data", data);
+
+  var svgs = d3.select("body")
+              .selectAll("svg")
+              .data(data)
+              .enter()
+              .append('svg')
+              .attr("width", svgWidth)
+              .attr("height", svgHeight);
+
+  var gs = svgs.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  gs.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x).ticks(5))
+    .append("text")
+      .attr("x", x(x.domain()[1]))
+      .attr("y", y(y.ticks().pop()) + 8)
+      // .attr("y", y(y.ticks().pop()) + 0.5)
+      // .attr("dy", "3.5em")
+      .attr("fill", "#000")
+      .attr("text-anchor", "end")
+      .text("Age");
+
+  gs.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y).ticks(5))
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("fill", "#000")
+      .text("Median Income, $");
+
+  gs.append("text")
+      .attr('class','title')
+      .attr('x', width / 2)
+      .attr('y', -5)
+      // .attr('y', height - 5)
+      .text(function(d) {
+        return d.key;
+      })
+      .attr('text-anchor', 'middle');
+
+  // Inside of each svg, draw your female line
+  var female = gs.append("g")
+      .attr("class", "female gender");
+
+  // female.append("path")
+  //     .attr("class", "line")
+  //     .attr("d", function(d) { return line(d.line_data[0].values); })
+  //     .style("stroke", function(d) {return z(d.line_data[0].id); });
+
+  female.append("path")
+      .attr("class", "area")
+      .attr("d", function(d) { return area(d.line_data[0].values); })
+      .style("fill", function(d) {return z(d.line_data[0].id); });
+
+  var femalePoints = female.append("g")
+  		.attr("class", "points")
+  		.style("fill", function(d) { return z(d.line_data[0].id); })
+		.selectAll("circle")
+		.data(function(d) { return d.line_data[0].values; })
+	  	.enter();
+
+  femalePoints.append("g")
+      .attr("class", "point")
+      .append("circle")
+      		.attr("cx", function(d) { return x(d.age); })
+    	  	.attr("cy", function(d) { return y(d.income); })
+          .attr("r", function(d) { return r(d.profiles); });
+
+  // console.log(female);
+
+  // Inside of each svg, draw your male line
+  var male = gs.append("g")
+      .attr("class", "male gender");
+
+  // male.append("path")
+  //     .attr("class", "line")
+  //     .attr("d", function(d) { return line(d.line_data[1].values); })
+  //     .style("stroke", function(d) {return z(d.line_data[1].id); });
+
+  male.append("path")
+    .attr("class", "area")
+    .attr("d", function(d) { return area(d.line_data[1].values); })
+    .style("fill", function(d) {return z(d.line_data[1].id); });
+
+
+  var malePoints = male.append("g")
+  		.attr("class", "points")
+  		.style("fill", function(d) { return z(d.line_data[1].id); })
+		.selectAll("circle")
+		.data(function(d) { return d.line_data[1].values; })
+	  	.enter();
+
+  malePoints.append("g")
+    .attr("class", "point")
+    .append("circle")
+    		.attr("cx", function(d) { return x(d.age); })
+  	  	.attr("cy", function(d) { return y(d.income); })
+        .attr("r", function(d) { return r(d.profiles); });
+
+
+    d3.selectAll(".point").append("text")
+       .attr("class", "ageLabel")
+       .attr("x", width)
+       .attr("y", -5)
+       .attr("dy", "0.35em")
+       .attr("font-size", "10px")
+       .attr("text-anchor", "end")
+       .text(function(d) { return d.age + " yo"; });
+
+
+    d3.selectAll(".point").append("text")
+       .attr("class", "incomeLabel")
+       .attr("x", width)
+       .attr("y", -5)
+       .attr("dy", "1.35em")
+       .attr("font-size", "10px")
+       .attr("text-anchor", "end")
+       .text(function(d) { return  "$" + d.income; });
+
+    d3.selectAll(".point").append("text")
+       .attr("class", "profilesLabel")
+       .attr("x", width)
+       .attr("y", -5)
+       .attr("dy", "2.35em")
+       .attr("font-size", "10px")
+       .attr("text-anchor", "end")
+       .text(function(d) { return d.profiles + " profiles"; });
+
+  //  d3.selectAll(".point").append("text")
+  //     .attr("class", "incomeLabel")
+  //     .attr("x", function(d) { return x(d.age); })
+  //     .attr("y", function(d) { return y(d.income); })
+  //     // .attr("dx", "0.35em")
+  //     .attr("dx", function(d) { return d.age <= 60 ? "0.35em" : "-0.35em"; })
+  //     .attr("dy", "1.35em")
+  //     .attr("font-size", "10px")
+  //     // .attr("text-anchor", "start")
+  //     .attr("text-anchor", function(d) { return d.age <= 60 ? "start" : "end"; })
+  //     .text(function(d) { return  "$" + d.income; });
+
+  // d3.selectAll(".point").append("text")
+  //    .attr("class", "ageLabel")
+  //    .attr("x", function(d) { return x(d.age); })
+  //    .attr("y", function(d) { return y(d.income); })
+  //   //  .attr("dx", "0.35em")
+  //    .attr("dx", function(d) { return d.age <= 60 ? "0.35em" : "-0.35em"; })
+  //    .attr("dy", "0.35em")
+  //    .attr("font-size", "10px")
+  //   //  .attr("text-anchor", "start")
+  //    .attr("text-anchor", function(d) { return d.age <= 60 ? "start" : "end"; })
+  //    .text(function(d) { return d.age + " years old"; });
+
+ // d3.selectAll(".point").append("text")
+ //    .attr("class", "profilesLabel")
+ //    .attr("x", function(d) { return x(d.age); })
+ //    .attr("y", function(d) { return y(d.income); })
+ //    // .attr("dx", "0.35em")
+ //    .attr("dx", function(d) { return d.age <= 60 ? "0.35em" : "-0.35em"; })
+ //    .attr("dy", "-0.6em")
+ //    .attr("font-size", "10px")
+ //    // .attr("text-anchor", "start")
+ //    .attr("text-anchor", function(d) { return d.age <= 60 ? "start" : "end"; })
+ //    .text(function(d) { return d.profiles + " profiles"; });
+
+
+  // too many to display at once
+  // only show text labels when group is hovered
+  d3.selectAll(".point").on("mouseover", function(d) {
+      // change the class
+      d3.select(this).classed("hover", true);
+
+      // bring the bubble to the front
+      // breaks sorting, but helps interactivity
+      d3.select(this).raise();
+    })
+    .on("mouseout", function(d, i) {
+      // remove hover class
+      d3.select(this).classed("hover", false);
+    });
+
+   var gender = d3.selectAll(".gender");
+
+   gender.on("click", function() {
+      var me = d3.select(this);
+     	var on = me.classed("on");
+     	var other = me.classed("female") ? d3.selectAll(".male") : d3.selectAll(".female");
+     		if (!on) {
+           other.style("visibility", "hidden").style("opacity", 0);
+       	}
+    	  else {
+ 	          other.style("visibility", "visible").style("opacity", 1);
+        }
+     me.classed("on", !on);
+   });
+
+   gender.on("mouseover", function() {
+     var thisGender = d3.select(this).classed("female") ? d3.selectAll(".female") : d3.selectAll(".male");
+     var otherGender = d3.select(this).classed("female") ? d3.selectAll(".male") : d3.selectAll(".female");
+     thisGender.raise();
+     otherGender.selectAll(".points").style("fill", "gray");
+     otherGender.selectAll("path").style("fill", "gray");
+   });
+
+   gender.on("mouseout", function() {
+     var thisGender = d3.select(this).classed("female") ? d3.selectAll(".female") : d3.selectAll(".male");
+     var otherGender = d3.select(this).classed("female") ? d3.selectAll(".male") : d3.selectAll(".female");
+     otherGender.selectAll(".points").style("fill", function(d) { return z(otherGender.attr("class").split(" ")[0]); });
+     otherGender.selectAll("path").style("fill", function(d) { return z(otherGender.attr("class").split(" ")[0]); });
+   })
+
+
+});
+
+
+function type(d, _, columns) {
+  for (var i = 1, n = columns.length, c; i < n; ++i)
+    d[c = columns[i]] = +d[c];
+  return d;
+}
+
+</script>
