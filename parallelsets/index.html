@@ -1,0 +1,131 @@
+<DOCTYPE html>
+<head>
+<script src="//d3js.org/d3.v4.js"></script>
+
+<style>
+svg { border: solid 1px #333; margin: 0px;}
+#visdiv {
+  text-align: center;
+}
+
+</style>
+</head>
+
+<body>
+<div id="visdiv">
+</div>
+
+<script>
+
+d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
+
+  console.log("data", data);
+
+  var margin = {top: 20, right: 20, bottom: 20, left: 20};
+  var svgWidth = 960;
+  var svgHeight = 640;
+  var width = svgWidth - margin.left - margin.right;
+  var height = svgHeight - margin.top - margin.bottom;
+
+  var g = d3.select("#visdiv").append("svg")
+      .attr("class", "parsets")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("class", "plot")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var x = d3.scaleLinear().range([0, width]);
+  var y = d3.scaleLinear().range([height, 0]);
+
+  // var root = d3.stratify()
+  //   .id(function(d) { return d.name; })
+  //   .parentId(function(d) { return d.parent; })
+  //   (data);
+
+  var nestS = d3.nest()
+    .key(function(d) { return d.sex; })
+    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+    .entries(data);
+  console.log("nestS", nestS);
+
+  var total = 0;
+  nestS.forEach(function(d) {
+    total += d.value;
+  })
+  // console.log(total);
+
+  x.domain([0, total]);
+
+  var nestO = d3.nest()
+    .key(function(d) { return d.orientation; })
+    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+    .entries(data);
+  console.log("nestO", nestO);
+
+  var nestEd = d3.nest()
+    .key(function(d) { return d.education; })
+    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+    .entries(data);
+  console.log("nestEd", nestEd);
+
+  var nestEt = d3.nest()
+    .key(function(d) { return d.ethnicity; })
+    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+    .entries(data);
+  console.log("nestEt", nestEt);
+
+
+  var nestSO = d3.nest()
+    .key(function(d) { return d.sex; })
+    .key(function(d) { return d.orientation; })
+    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+    .entries(data);
+
+  console.log("nestSO", nestSO);
+
+
+  var nestSOEd = d3.nest()
+    .key(function(d) { return d.sex; })
+    .key(function(d) { return d.orientation; })
+    .key(function(d) { return d.education; })
+    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+    .entries(data);
+
+  console.log("nestSOEd", nestSOEd);
+
+
+  var nestSOEdEt = d3.nest()
+    .key(function(d) { return d.sex; })
+    .key(function(d) { return d.orientation; })
+    .key(function(d) { return d.education; })
+    .key(function(d) { return d.ethnicity; })
+    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+    .entries(data);
+
+  console.log("nestSOEdEt", nestSOEdEt);
+
+
+  nestSOEdEt.forEach(function(sexN) {
+    // console.log(sexN.key);
+    nestS.forEach(function(sex) {
+      if (sex.key === sexN.key)
+        sexN.total = sex.values;
+      });
+  });
+
+    console.log("nestSOEdEt", nestSOEdEt);
+  // data = d3.nest()
+  //   .key(function(d) { return d.sex; })
+  //   .key(function(d) { return d.orientation; })
+  //   .key(function(d) { return d.ethnicity; })
+  //   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
+  //   .entries(data);
+  //
+  // console.log("data nested", data);
+
+});
+
+</script>
+
+</body>
