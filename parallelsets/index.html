@@ -38,6 +38,16 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
   var x = d3.scaleLinear().range([0, width]);
   var y = d3.scaleLinear().range([height, 0]);
 
+  // var line = d3.line()
+  //     .x(function(d) { return x(d.age); })
+  //     .y(function(d) { return y(d.income); });
+  //
+  // var area = d3.area()
+  //     .x(function(d) { return x(d.age); })
+  //     .y0(function(d) { return y(d.income) - r(d.profiles); })
+  //     .y1(function(d) { return y(d.income) + r(d.profiles); });
+
+
   // var root = d3.stratify()
   //   .id(function(d) { return d.name; })
   //   .parentId(function(d) { return d.parent; })

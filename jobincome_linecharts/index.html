@@ -34,7 +34,9 @@
 }
 
 </style>
+<script src="//d3js.org/d3.v3.min.js"></script>
 <script src="//d3js.org/d3.v4.min.js"></script>
+<script src="d3.svg.ribbon.js"></script>
 
 </head>
 <body>
@@ -53,8 +55,13 @@ var height = svgHeight - margin.top - margin.bottom;
 var x = d3.scaleLinear().range([0, width]),
     y = d3.scaleLinear().range([height, 0]),
     z = d3.scaleOrdinal(["rgb(215,61,61)", "rgb(56,109,164)"]);
-    r = d3.scaleSqrt().range([1, 7]);
+    r = d3.scaleSqrt().range([0.75, 7.5]);
 
+
+var ribbon = d3.svg.ribbon()
+    .x(function(d) { return x(d.age); })
+    .y(function(d) { return y(d.income); })
+    .r(function(d) { return r(d.profiles); });
 
 var line = d3.line()
     // .curve(d3.curveLinear)
@@ -142,7 +149,8 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
 
   gs.append("g")
       .attr("class", "axis axis--y")
-      .call(d3.axisLeft(y).ticks(5))
+      // .call(d3.axisLeft(y).ticks(5).tickFormat(d3.format(".2s")))
+      .call(d3.axisLeft(y).ticks(5).tickFormat(d3.formatPrefix(".0s", 1000)))
     .append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 6)
@@ -164,15 +172,20 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
   var female = gs.append("g")
       .attr("class", "female gender");
 
+  female.append("path")
+    .attr("class", "area")
+    .attr("d", function(d) { return ribbon(d.line_data[0].values); })
+    .style("fill", function(d) {return z(d.line_data[0].id); });
+
   // female.append("path")
   //     .attr("class", "line")
   //     .attr("d", function(d) { return line(d.line_data[0].values); })
   //     .style("stroke", function(d) {return z(d.line_data[0].id); });
 
-  female.append("path")
-      .attr("class", "area")
-      .attr("d", function(d) { return area(d.line_data[0].values); })
-      .style("fill", function(d) {return z(d.line_data[0].id); });
+  // female.append("path")
+  //     .attr("class", "area")
+  //     .attr("d", function(d) { return area(d.line_data[0].values); })
+  //     .style("fill", function(d) {return z(d.line_data[0].id); });
 
   var femalePoints = female.append("g")
   		.attr("class", "points")
@@ -194,15 +207,21 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
   var male = gs.append("g")
       .attr("class", "male gender");
 
+  male.append("path")
+    .attr("class", "area")
+    .attr("d", function(d) { return ribbon(d.line_data[1].values); })
+    .style("fill", function(d) {return z(d.line_data[1].id); });
+
+
   // male.append("path")
   //     .attr("class", "line")
   //     .attr("d", function(d) { return line(d.line_data[1].values); })
   //     .style("stroke", function(d) {return z(d.line_data[1].id); });
 
-  male.append("path")
-    .attr("class", "area")
-    .attr("d", function(d) { return area(d.line_data[1].values); })
-    .style("fill", function(d) {return z(d.line_data[1].id); });
+  // male.append("path")
+  //   .attr("class", "area")
+  //   .attr("d", function(d) { return area(d.line_data[1].values); })
+  //   .style("fill", function(d) {return z(d.line_data[1].id); });
 
 
   var malePoints = male.append("g")
