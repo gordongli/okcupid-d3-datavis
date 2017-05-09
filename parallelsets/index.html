@@ -17,7 +17,7 @@ svg { border: solid 1px #333; margin: 0px;}
 
 <script>
 
-d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
+d3.csv("pivot_cleaned_profiles_noessay.csv", function(error, data) {
 
   console.log("data", data);
 
@@ -26,6 +26,7 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
   var svgHeight = 640;
   var width = svgWidth - margin.left - margin.right;
   var height = svgHeight - margin.top - margin.bottom;
+  var categoryMargin = 30;
 
   var g = d3.select("#visdiv").append("svg")
       .attr("class", "parsets")
@@ -37,37 +38,6 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
 
   var x = d3.scaleLinear().range([0, width]);
   var y = d3.scaleLinear().range([height, 0]);
-
-  // var numDimensions = 4;
-  // for (var dim = 0; dim < numDimensions; dim++) {
-  //   g.append("g")
-  //     // .attr("class", "dimension")
-  //     // .attr("id", "dimension" + dim)
-  //     .append("line")
-  //       .attr("class", "axis")
-  //       .attr("x1", 0)
-  //       .attr("x2", width)
-  //       .attr("y1", (height/3)*dim)
-  //       .attr("y2", (height/3)*dim)
-  //       .attr("style", "stroke:rgb(0,0,0); stroke-width:2");
-  // }
-
-
-
-  // var line = d3.line()
-  //     .x(function(d) { return x(d.age); })
-  //     .y(function(d) { return y(d.income); });
-  //
-  // var area = d3.area()
-  //     .x(function(d) { return x(d.age); })
-  //     .y0(function(d) { return y(d.income) - r(d.profiles); })
-  //     .y1(function(d) { return y(d.income) + r(d.profiles); });
-
-
-  // var root = d3.stratify()
-  //   .id(function(d) { return d.name; })
-  //   .parentId(function(d) { return d.parent; })
-  //   (data);
 
   var nestS = d3.nest()
     .key(function(d) { return d.sex; })
@@ -83,29 +53,34 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
   x.domain([0, total]);
 
   function drawDimension(dimensionNum, numDimensions, categories) {
-    var padding = 20;
+    var margin = categoryMargin / categories.length;
     var offset = 0;
-    for (i = 0; i < categories.length; i++) {
+    var categoryNum;
+    for (categoryNum = 0; categoryNum < categories.length; categoryNum++) {
       g.append("g")
-        .attr("id", categories[i].key)
+        .attr("class", "category")
+        .attr("id", categories[categoryNum].key)
+        .attr("value", categories[categoryNum].value)
         .append("line")
           .attr("x1", function() {
-            if (i == 0) { return 0; }
+            if (categoryNum == 0) { return 0; }
             else {
               offset = 0;
-              var j;
-              for (j = 0; j < i; j++) {
-                offset += x(categories[j].value);
+              var prevCategoryNum;
+              for (prevCategoryNum = 0; prevCategoryNum < categoryNum; prevCategoryNum++) {
+                offset += x(categories[prevCategoryNum].value);
               }
-              return offset + padding;
+              return offset + margin;
             }
           })
-          .attr("x2", x(categories[i].value) + offset)
+          // this should take the margin added to x1 into account
+          .attr("x2", offset + x(categories[categoryNum].value))
           .attr("y1", (height/(numDimensions-1))*(dimensionNum-1))
           .attr("y2", (height/(numDimensions-1))*(dimensionNum-1))
           .attr("style", "stroke:rgb(0,0,0); stroke-width:2");
     }
   };
+
 
   drawDimension(1, 4, nestS);
 
@@ -135,6 +110,36 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
   drawDimension(4, 4, nestEt);
 
 
+  // var categories = document.querySelectorAll(".category");
+  //
+  // categories.forEach(function(category) {
+  //   var line = category.querySelector("line");
+  //   var textElement = document.createElement("text");
+  //   var textNode = document.createTextNode(category.getAttribute("id"));
+  //   textElement.setAttribute("x", line.getAttribute("x1"));
+  //   textElement.setAttribute("y", line.getAttribute("y1"));
+  //   textElement.style.fill = "red";
+  //   textElement.style.fontSize = 10;
+  //   textElement.appendChild(textNode);
+  //   category.appendChild(textElement);
+  // })
+
+
+  // var categories = d3.selectAll(".category");
+  // // console.log(categories._groups);
+  //
+  // categories._groups.forEach(function(category) {
+  //   console.log(category);
+  // })
+
+
+  // d3.selectAll(".category")
+  //   .append("text")
+  //   .x(d3.select(this).select("line").attr("x1"))
+  //   .y(d3.select(this).select("line").attr("y1"))
+  //   .text(d3.select(this).attr("id"));
+
+
   var nestSO = d3.nest()
     .key(function(d) { return d.sex; })
     .key(function(d) { return d.orientation; })
@@ -143,6 +148,16 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
 
   console.log("nestSO", nestSO);
 
+  // nestSO.forEach(function(gender) {
+  //   console.log(gender);
+  //   var genderG = d3.select("#" + gender.key)
+  //   console.log(genderG);
+  //   gender.values.forEach(function(orientation) {
+  //     var orientationG = d3.select("#" + orientation.key)
+  //     console.log(orientation);
+  //     console.log(orientationG);
+  //   })
+  // });
 
   var nestSOEd = d3.nest()
     .key(function(d) { return d.sex; })
