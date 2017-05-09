@@ -38,6 +38,22 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
   var x = d3.scaleLinear().range([0, width]);
   var y = d3.scaleLinear().range([height, 0]);
 
+  // var numDimensions = 4;
+  // for (var dim = 0; dim < numDimensions; dim++) {
+  //   g.append("g")
+  //     // .attr("class", "dimension")
+  //     // .attr("id", "dimension" + dim)
+  //     .append("line")
+  //       .attr("class", "axis")
+  //       .attr("x1", 0)
+  //       .attr("x2", width)
+  //       .attr("y1", (height/3)*dim)
+  //       .attr("y2", (height/3)*dim)
+  //       .attr("style", "stroke:rgb(0,0,0); stroke-width:2");
+  // }
+
+
+
   // var line = d3.line()
   //     .x(function(d) { return x(d.age); })
   //     .y(function(d) { return y(d.income); });
@@ -63,9 +79,35 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
   nestS.forEach(function(d) {
     total += d.value;
   })
-  // console.log(total);
 
   x.domain([0, total]);
+
+  function drawDimension(dimensionNum, numDimensions, categories) {
+    var padding = 20;
+    var offset = 0;
+    for (i = 0; i < categories.length; i++) {
+      g.append("g")
+        .attr("id", categories[i].key)
+        .append("line")
+          .attr("x1", function() {
+            if (i == 0) { return 0; }
+            else {
+              offset = 0;
+              var j;
+              for (j = 0; j < i; j++) {
+                offset += x(categories[j].value);
+              }
+              return offset + padding;
+            }
+          })
+          .attr("x2", x(categories[i].value) + offset)
+          .attr("y1", (height/(numDimensions-1))*(dimensionNum-1))
+          .attr("y2", (height/(numDimensions-1))*(dimensionNum-1))
+          .attr("style", "stroke:rgb(0,0,0); stroke-width:2");
+    }
+  };
+
+  drawDimension(1, 4, nestS);
 
   var nestO = d3.nest()
     .key(function(d) { return d.orientation; })
@@ -73,17 +115,24 @@ d3.csv("flat_cleaned_profiles_noessay.csv", function(error, data) {
     .entries(data);
   console.log("nestO", nestO);
 
+  drawDimension(2, 4, nestO);
+
+
   var nestEd = d3.nest()
     .key(function(d) { return d.education; })
     .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
     .entries(data);
   console.log("nestEd", nestEd);
 
+  drawDimension(3, 4, nestEd);
+
   var nestEt = d3.nest()
     .key(function(d) { return d.ethnicity; })
     .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
     .entries(data);
   console.log("nestEt", nestEt);
+
+  drawDimension(4, 4, nestEt);
 
 
   var nestSO = d3.nest()
