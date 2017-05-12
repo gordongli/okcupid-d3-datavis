@@ -14,7 +14,7 @@ var color = d3.scaleSequential(d3.interpolateRdBu);
 // console.log(d3.interpolateRdBu);
 // color.range(d3.schemeRdBu);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("div#vis").append("svg")
     .attr("class", "scatter")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
