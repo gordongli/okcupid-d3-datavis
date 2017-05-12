@@ -1,10 +1,15 @@
 <DOCTYPE html>
 <head>
 <script src="//d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="helpers.js"></script>
+<script src="tooltip.js"></script>
+
+<link href="../style.css" rel="stylesheet" type="text/css">
 
 <style>
 svg { border: solid 1px #333; margin: 0px;}
-#visdiv {
+div#vis {
   text-align: center;
 }
 
@@ -12,7 +17,7 @@ svg { border: solid 1px #333; margin: 0px;}
 </head>
 
 <body>
-<div id="visdiv">
+<div id="vis">
 </div>
 
 <script>
@@ -21,182 +26,132 @@ d3.csv("simple_pivot_cleaned_profiles_noessay.csv", function(error, data) {
 
   console.log("data", data);
 
-  var margin = {top: 20, right: 20, bottom: 20, left: 20};
-  var svgWidth = 960;
-  var svgHeight = 640;
-  var width = svgWidth - margin.left - margin.right;
-  var height = svgHeight - margin.top - margin.bottom;
-  var categoryMargin = 30;
+  var leaves = data.map(function(d) {
+    var n = {};
+    n.value = +d.row_count;
+    n.label = d.ethnicity; // for nice tooltips
+    // id is used by stratify to represent the current node
+    n.id = [d.sex, d.orientation, d.education, d.ethnicity].join("-");
+    // parentID is used by stratify to represent the parent node (should match the id of another node eventually)
+    n.parentId = [d.sex, d.orientation, d.education].join("-")
+    return n;
+  });
+  console.log("leaves", leaves);
 
-  var g = d3.select("#visdiv").append("svg")
-      .attr("class", "parsets")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-      .attr("class", "plot")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  var x = d3.scaleLinear().range([0, width]);
-  var y = d3.scaleLinear().range([height, 0]);
+  // grab all the unique values so we can create inner nodes
+  var unique = {};
+  unique.sex = d3.set(data, function(d) { return d.sex; });
+  unique.orientation = d3.set(data, function(d) { return d.orientation; });
+  unique.education = d3.set(data, function(d) { return d.education; });
+  unique.ethnicity = d3.set(data, function(d) { return d.ethnicity; });
+  console.log("unique", unique);
 
-  var nestS = d3.nest()
-    .key(function(d) { return d.sex; })
-    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-    .entries(data);
-  console.log("nestS", nestS);
+  // start with a fake root
+  var innerNodes = [{
+    id: "root",
+    label: "root"
+  }];
 
-  var total = 0;
-  nestS.forEach(function(d) {
-    total += d.value;
-  })
+  // add one node for each sex, then for each sex/orientation combo, etc. etc.
+  unique.sex.each(function(s) {
+    innerNodes.push({ id: s, label: s, parentId: "root"});
 
-  x.domain([0, total]);
+    unique.orientation.each(function(o) {
+      innerNodes.push({
+        id: s + "-" + o,
+        label: o,
+        parentId: s
+      });
 
-  function drawDimension(dimensionNum, numDimensions, categories) {
-    var margin = categoryMargin / categories.length;
-    var offset = 0;
-    var categoryNum;
-    for (categoryNum = 0; categoryNum < categories.length; categoryNum++) {
-      g.append("g")
-        .attr("class", "category")
-        .attr("id", categories[categoryNum].key)
-        .attr("value", categories[categoryNum].value)
-        .append("line")
-          .attr("x1", function() {
-            if (categoryNum == 0) { return 0; }
-            else {
-              offset = 0;
-              var prevCategoryNum;
-              for (prevCategoryNum = 0; prevCategoryNum < categoryNum; prevCategoryNum++) {
-                offset += x(categories[prevCategoryNum].value);
-              }
-              return offset + margin;
-            }
-          })
-          // this should take the margin added to x1 into account
-          .attr("x2", offset + x(categories[categoryNum].value))
-          .attr("y1", (height/(numDimensions-1))*(dimensionNum-1))
-          .attr("y2", (height/(numDimensions-1))*(dimensionNum-1))
-          .attr("style", "stroke:rgb(0,0,0); stroke-width:2");
-    }
+      unique.education.each(function(ed) {
+        innerNodes.push({
+          id: s + "-" + o + "-" + ed,
+          label: ed,
+          parentId: s + "-" + o
+        });
+      });
+    });
+  });
+  console.log("innerNodes", innerNodes);
+
+  var root = innerNodes.concat(leaves);
+  console.log("root", root);
+
+  // then this should work to generate a hierarchy
+  // var stratified = d3.stratify()(innerNodes.concat(leaves));
+  var stratified = d3.stratify()(root);
+  console.log("stratified", stratified);
+
+  var summed = stratified.sum(function(d) { return d.value; });
+  console.log("summed", summed);
+
+  var partitioned = d3.partition()(summed);
+  console.log("partitioned", partitioned);
+
+  var arc = d3.arc()
+    .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
+    .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
+    .innerRadius(function(d) { return Math.max(0, y(d.y0)); })
+    .outerRadius(function(d) { return Math.max(0, y(d.y1)); });
+
+
+  // configure size, margin, and circle radius
+  var config = {
+      w: 900,
+      h: 640,
+      r: 4,
+      pad: 10
   };
 
+  // maximum diameter of circle is minimum dimension
+  config.d = Math.min(config.w, config.h);
 
-  drawDimension(1, 4, nestS);
+  // used to color node by depth
+  var color = d3.scaleOrdinal();
+  // setup color scale
+  color.domain(d3.range(stratified.height + 1));
+  // color.range(d3.schemeYlGnBu[root.height + 1]);
+  color.range(d3.schemeSpectral[stratified.height + 1].reverse());
 
-  var nestO = d3.nest()
-    .key(function(d) { return d.orientation; })
-    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-    .entries(data);
-  console.log("nestO", nestO);
+  var svg = d3.select("div#vis").append("svg");
+  svg.attr("width", config.w);
+  svg.attr("height", config.h);
 
-  drawDimension(2, 4, nestO);
+  var g = svg.append("g");
+  g.attr("id", "plot");
+  g.attr("transform", translate(config.pad, config.pad));
 
+  // translate so circle is in middle of plot area
+  var xshift = config.pad + (config.w) / 2;
+  var yshift = config.pad + (config.h) / 2;
+  g.attr("transform", translate(xshift, yshift));
 
-  var nestEd = d3.nest()
-    .key(function(d) { return d.education; })
-    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-    .entries(data);
-  console.log("nestEd", nestEd);
+  var diameter = config.d - 2 * config.pad;
+  var radius = diameter / 2;
 
-  drawDimension(3, 4, nestEd);
+  var x = d3.scaleLinear()
+    .range([0, 2 * Math.PI]);
 
-  var nestEt = d3.nest()
-    .key(function(d) { return d.ethnicity; })
-    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-    .entries(data);
-  console.log("nestEt", nestEt);
+  var y = d3.scaleSqrt()
+    .range([0, radius]);
 
-  drawDimension(4, 4, nestEt);
-
-
-  // var categories = document.querySelectorAll(".category");
-  //
-  // categories.forEach(function(category) {
-  //   var line = category.querySelector("line");
-  //   var textElement = document.createElement("text");
-  //   var textNode = document.createTextNode(category.getAttribute("id"));
-  //   textElement.setAttribute("x", line.getAttribute("x1"));
-  //   textElement.setAttribute("y", line.getAttribute("y1"));
-  //   textElement.style.fill = "red";
-  //   textElement.style.fontSize = 10;
-  //   textElement.appendChild(textNode);
-  //   category.appendChild(textElement);
-  // })
-
-
-  // var categories = d3.selectAll(".category");
-  // // console.log(categories._groups);
-  //
-  // categories._groups.forEach(function(category) {
-  //   console.log(category);
-  // })
-
-
-  // d3.selectAll(".category")
-  //   .append("text")
-  //   .x(d3.select(this).select("line").attr("x1"))
-  //   .y(d3.select(this).select("line").attr("y1"))
-  //   .text(d3.select(this).attr("id"));
-
-
-  var nestSO = d3.nest()
-    .key(function(d) { return d.sex; })
-    .key(function(d) { return d.orientation; })
-    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-    .entries(data);
-
-  console.log("nestSO", nestSO);
-
-  // nestSO.forEach(function(gender) {
-  //   console.log(gender);
-  //   var genderG = d3.select("#" + gender.key)
-  //   console.log(genderG);
-  //   gender.values.forEach(function(orientation) {
-  //     var orientationG = d3.select("#" + orientation.key)
-  //     console.log(orientation);
-  //     console.log(orientationG);
-  //   })
-  // });
-
-  var nestSOEd = d3.nest()
-    .key(function(d) { return d.sex; })
-    .key(function(d) { return d.orientation; })
-    .key(function(d) { return d.education; })
-    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-    .entries(data);
-
-  console.log("nestSOEd", nestSOEd);
-
-
-  var nestSOEdEt = d3.nest()
-    .key(function(d) { return d.sex; })
-    .key(function(d) { return d.orientation; })
-    .key(function(d) { return d.education; })
-    .key(function(d) { return d.ethnicity; })
-    .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-    .entries(data);
-
-  console.log("nestSOEdEt", nestSOEdEt);
-
-
-  nestSOEdEt.forEach(function(sexN) {
-    // console.log(sexN.key);
-    nestS.forEach(function(sex) {
-      if (sex.key === sexN.key)
-        sexN.total = sex.values;
-      });
-  });
-
-    console.log("nestSOEdEt", nestSOEdEt);
-  // data = d3.nest()
-  //   .key(function(d) { return d.sex; })
-  //   .key(function(d) { return d.orientation; })
-  //   .key(function(d) { return d.ethnicity; })
-  //   .rollup(function(leaves) { return d3.sum(leaves, function(d) {return d.row_count; }) })
-  //   .entries(data);
-  //
-  // console.log("data nested", data);
+  var arcs = g.selectAll("path")
+          .data(partitioned.descendants())
+        .enter().append("path")
+          .attr("d", arc)
+          .attr("class", "node")
+          .attr("id", function(d) { return d.data.id; })
+          .style("fill", function(d) { return color(d.depth)})
+          .on("mouseover.tooltip", function(d) {
+            show_tooltip(g, d3.select(this));
+            d3.select(this).classed("selected", true);
+            d3.select(this).raise();
+          })
+          .on("mouseout.tooltip", function(d) {
+            g.select("#tooltip").remove();
+            d3.select(this).classed("selected", false);
+          });
 
 });
 
