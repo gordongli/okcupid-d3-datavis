@@ -1,6 +1,6 @@
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 960 - margin.top - margin.bottom;
+var margin = {top: 20, right: 20, bottom: 30, left: 35},
+    width = 800 - margin.left - margin.right,
+    height = 800 - margin.top - margin.bottom;
 
 var x = d3.scaleLog()
     .range([0, width]);
@@ -88,7 +88,8 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
 
   x.domain(d3.extent(data, function(d) { return d.male_ratio; })).nice();
   y.domain(d3.extent(data, function(d) { return d.female_ratio; }));
-  color.domain([2, 0])
+  color.domain([2, 0]);
+  // color.domain([2, 0]);
   // color.domain(d3.extent(data, function(d) { return d.female_male_ratio; })).nice();
   // color.domain(color.domain().reverse());
   console.log(color.domain());
@@ -188,7 +189,7 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
               "<tr><th>Female Count:</th><td>" + d3.format("d")(d.female) + "</td></tr>" + "\n" +
               "<tr><th>Male Frequency:</th><td>" + d3.format(".1%")(d.male_ratio) + "</td></tr>" + "\n" +
               "<tr><th>Female Frequency:</th><td>" + d3.format(".1%")(d.female_ratio) + "</td></tr>" + "\n" +
-              "<tr><th>Female-Male Ratio:</th><td>" + d3.format(".3r")(d.female_male_ratio) + "</td></tr>" + "\n" +
+              "<tr><th>Female/Male Frequency:</th><td>" + d3.format(".3r")(d.female_male_ratio) + "</td></tr>" + "\n" +
               "</table>");
 
             details.style("visibility", "visible");
@@ -211,15 +212,15 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
   // https://bl.ocks.org/mbostock/1424037
   var details = svg.append("foreignObject")
     .attr("id", "details")
-    .attr("width", 240)
+    .attr("width", 360)
     // .attr("width", 960)
     .attr("height", 600)
-    .attr("x", margin.left)
+    .attr("x", -2*margin.left)
     .attr("y", margin.top);
 
   var body = details.append("xhtml:body")
     .style("text-align", "left")
-    .style("background", "white")
+    .style("background", "whitesmoke")
     // .style("background", "none")
     .style("font-size", "10pt")
     .html("<p>N/A</p>");
@@ -305,7 +306,7 @@ groups.legend.append("text")
 .attr("dx", 0)
 .attr("dy", "1em")
 .attr("text-anchor", "middle")
-.text("Female/Male Ratio");
+.text("Female/Male Frequency");
 
 // shift to a nice location
 groups.legend.attr("transform", translate(width-legend.width, margin.top));

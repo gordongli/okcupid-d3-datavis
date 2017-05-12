@@ -60,8 +60,8 @@ function show_tooltip(g, node) {
     tooltip.attr("dx", shift_x);
   }
 
-  // if text will fall off top side, place below circle instead
-  if (tbox.y < gbox.y) {
-    tooltip.attr("dy", shift_y + tbox.height);
-  }
+  // // if text will fall off top side, place below circle instead
+  // if (tbox.y < gbox.y) {
+  //   tooltip.attr("dy", shift_y + tbox.height);
+  // }
 }

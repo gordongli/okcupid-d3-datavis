@@ -8,10 +8,10 @@
 <link href="../style.css" rel="stylesheet" type="text/css">
 
 <style>
-svg { border: solid 1px #333; margin: 0px;}
-div#vis {
+svg { border: solid 1px #333; }
+/*div#vis {
   text-align: center;
-}
+}*/
 
 </style>
 </head>
@@ -98,10 +98,10 @@ d3.csv("simple_pivot_cleaned_profiles_noessay.csv", function(error, data) {
 
   // configure size, margin, and circle radius
   var config = {
-      w: 900,
+      w: 640,
       h: 640,
       r: 4,
-      pad: 10
+      pad: 20
   };
 
   // maximum diameter of circle is minimum dimension
@@ -120,11 +120,13 @@ d3.csv("simple_pivot_cleaned_profiles_noessay.csv", function(error, data) {
 
   var g = svg.append("g");
   g.attr("id", "plot");
-  g.attr("transform", translate(config.pad, config.pad));
+  // g.attr("transform", translate(config.pad, config.pad));
 
   // translate so circle is in middle of plot area
-  var xshift = config.pad + (config.w) / 2;
-  var yshift = config.pad + (config.h) / 2;
+  // var xshift = config.pad/2 + (config.w) / 2;
+  // var yshift = config.pad/2 + (config.h) / 2;
+  var xshift = config.w / 2;
+  var yshift = config.h / 2;
   g.attr("transform", translate(xshift, yshift));
 
   var diameter = config.d - 2 * config.pad;

@@ -4,7 +4,11 @@ body {
   font-size: 13pt;
   margin: 10vh 10em;
   min-width: 1000px;
-  max-width: 1200px;
+  /*max-width: 1200px;*/
+}
+
+text {
+  font-family: "Source Sans Pro", "Helvetica", sans-serif;
 }
 
 h1,
@@ -24,7 +28,7 @@ img#avatar {
 
 #nav a {
   display: inline-block;
-  padding: 0vw 20px; 
+  padding: 0vw 20px;
 }
 
 .centertext {
@@ -52,6 +56,11 @@ img#avatar {
     transform: scaleY(0.25);
     clear: both;
 }
+
+div#vis {
+  text-align: center;
+}
+
 
 svg {
   display: block;
