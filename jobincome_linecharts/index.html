@@ -338,8 +338,8 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
      var thisGender = d3.select(this).classed("female") ? d3.selectAll(".female") : d3.selectAll(".male");
      var otherGender = d3.select(this).classed("female") ? d3.selectAll(".male") : d3.selectAll(".female");
      thisGender.raise();
-     otherGender.selectAll(".points").style("fill", "gray");
-     otherGender.selectAll("path").style("fill", "gray");
+     otherGender.selectAll(".points").style("fill", "lightgray");
+     otherGender.selectAll("path").style("fill", "lightgray");
    });
 
    gender.on("mouseout", function() {
