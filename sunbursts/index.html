@@ -107,12 +107,32 @@ d3.csv("simple_pivot_cleaned_profiles_noessay.csv", function(error, data) {
   // maximum diameter of circle is minimum dimension
   config.d = Math.min(config.w, config.h);
 
+/*
   // used to color node by depth
   var color = d3.scaleOrdinal();
   // setup color scale
   color.domain(d3.range(stratified.height + 1));
   // color.range(d3.schemeYlGnBu[root.height + 1]);
   color.range(d3.schemeSpectral[stratified.height + 1].reverse());
+*/
+
+  unique.orientation.each(function(category) {
+    console.log(category);
+  })
+  var color = d3.scaleOrdinal()
+  color.domain([
+    "m","f",
+    "straight", "gay", "bisexual",
+    "college", "less than college", "more than college", "NA",
+    "white", "other", "asian", "hispanic", "black",
+  ]);
+  color.range([
+    // "red", "blue",
+    "rgb(56,109,164)", "rgb(215,61,61)",
+    "blue", "pink", "purple",
+    "green", "gold", "orange", "gray",
+    "white", "gray", "yellow", "brown", "black"
+  ]);
 
   var svg = d3.select("div#vis").append("svg");
   svg.attr("width", config.w);
@@ -144,7 +164,8 @@ d3.csv("simple_pivot_cleaned_profiles_noessay.csv", function(error, data) {
           .attr("d", arc)
           .attr("class", "node")
           .attr("id", function(d) { return d.data.id; })
-          .style("fill", function(d) { return color(d.depth)})
+          .style("fill", function(d) { return color(d.data.label)})
+          // .style("fill", function(d) { return color(d.depth)})
           .on("mouseover.tooltip", function(d) {
             show_tooltip(g, d3.select(this));
             d3.select(this).classed("selected", true);
