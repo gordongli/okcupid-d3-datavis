@@ -46,7 +46,7 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
   unique.sex = d3.set(data, function(d) { return d.sex; });
   unique.education = d3.set(data, function(d) { return d.education; });
   unique.ethnicity = d3.set(data, function(d) { return d.ethnicity; });
-  console.log("unique1", unique);
+  console.log("unique", unique);
 
 
   // start with a fake root
@@ -169,9 +169,24 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
           .on("mouseout.tooltip", function(d) {
             g.select("#tooltip").remove();
             d3.select(this).classed("selected", false);
-          });
+          })
+          .on("click", click);
 
   d3.selectAll("div#vis path#root").style("fill", "#e6e6e6");
+
+
+  function click(d) {
+  svg.transition()
+      .duration(750)
+      .tween("scale", function() {
+        var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+            yd = d3.interpolate(y.domain(), [d.y0, 1]),
+            yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
+        return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
+      })
+    .selectAll("path")
+      .attrTween("d", function(d) { return function() { return arc(d); }; });
+  }
 
 });
 
@@ -325,10 +340,23 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
           .on("mouseout.tooltip", function(d) {
             g.select("#tooltip").remove();
             d3.select(this).classed("selected", false);
-          });
+          })
+          .on("click", click);
 
   d3.selectAll("div#vis path#root").style("fill", "#e6e6e6");
 
+  function click(d) {
+    svg.transition()
+        .duration(750)
+        .tween("scale", function() {
+          var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+              yd = d3.interpolate(y.domain(), [d.y0, 1]),
+              yr = d3.interpolate(y.range(), [d.y0 ? 20 : 0, radius]);
+          return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
+        })
+      .selectAll("path")
+        .attrTween("d", function(d) { return function() { return arc(d); }; });
+  }
 });
 
 </script>
