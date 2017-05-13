@@ -17,8 +17,8 @@
 </head>
 
 <body>
-<div id="vis">
-</div>
+<div class="vis" id="vis1"> <h2>Ethnicity and Education</h2> </div>
+<div class="vis" id="vis2"> <h2>Orientation and Religion</h2> </div>
 
 <script>
 
@@ -51,12 +51,12 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
 
   // start with a fake root
   var innerNodes = [{
-    id: "root",
-    label: "root"
+    id: "all",
+    label: "all"
   }];
   // add one node for each sex, then for each sex/orientation combo, etc. etc.
   unique.sex.each(function(s) {
-    innerNodes.push({ id: s, label: s, parentId: "root"});
+    innerNodes.push({ id: s, label: s, parentId: "all"});
 
     unique.ethnicity.each(function(et) {
       innerNodes.push({
@@ -103,7 +103,7 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
   // maximum diameter of circle is minimum dimension
   config.d = Math.min(config.w, config.h);
 
-  var svg = d3.select("div#vis").append("svg");
+  var svg = d3.select("div#vis1").append("svg");
   svg.attr("id", "sunburst1");
   svg.attr("width", config.w);
   svg.attr("height", config.h);
@@ -158,9 +158,16 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
           .attr("d", arc)
           .attr("class", "node")
           .attr("id", function(d) { return d.data.id; })
-          // .attr("id", function(d) { return d.data.id + ": " + d3.format(",")(d.value); })
+          .attr("label", function(d) {
+            if (d.parent != null) {
+                var percentOfParent = d3.format(".0%")(d.value / d.parent.value);
+                return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+            }
+            else {
+                return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
+            }
+          })
           .style("fill", function(d) { return color(d.data.label)})
-          // .style("fill", function(d) { return color(d.depth)})
           .on("mouseover.tooltip", function(d) {
             show_tooltip(g, d3.select(this));
             d3.select(this).classed("selected", true);
@@ -172,7 +179,7 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
           })
           .on("click", click);
 
-  d3.selectAll("div#vis path#root").style("fill", "#e6e6e6");
+  d3.select("div#vis1 path#all").style("fill", "#e6e6e6");
 
 
   function click(d) {
@@ -218,12 +225,12 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
 
   // start with a fake root
   var innerNodes = [{
-    id: "root",
-    label: "root"
+    id: "all",
+    label: "all"
   }];
   // add one node for each sex, then for each sex/orientation combo, etc. etc.
   unique.sex.each(function(s) {
-    innerNodes.push({ id: s, label: s, parentId: "root"});
+    innerNodes.push({ id: s, label: s, parentId: "all"});
 
     unique.orientation.each(function(o) {
       innerNodes.push({
@@ -272,7 +279,7 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
   // maximum diameter of circle is minimum dimension
   config.d = Math.min(config.w, config.h);
 
-  var svg = d3.select("div#vis").append("svg");
+  var svg = d3.select("div#vis2").append("svg");
   svg.attr("id", "sunburst2");
   svg.attr("width", config.w);
   svg.attr("height", config.h);
@@ -329,9 +336,16 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
           .attr("d", arc)
           .attr("class", "node")
           .attr("id", function(d) { return d.data.id; })
-          // .attr("id", function(d) { return d.data.id + ": " + d3.format(",")(d.value); })
+          .attr("label", function(d) {
+            if (d.parent != null) {
+                var percentOfParent = d3.format(".0%")(d.value / d.parent.value);
+                return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+            }
+            else {
+                return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
+            }
+          })
           .style("fill", function(d) { return color(d.data.label)})
-          // .style("fill", function(d) { return color(d.depth)})
           .on("mouseover.tooltip", function(d) {
             show_tooltip(g, d3.select(this));
             d3.select(this).classed("selected", true);
@@ -343,7 +357,7 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
           })
           .on("click", click);
 
-  d3.selectAll("div#vis path#root").style("fill", "#e6e6e6");
+  d3.select("div#vis2 path#all").style("fill", "#e6e6e6");
 
   function click(d) {
     svg.transition()

@@ -61,6 +61,10 @@ div#vis {
   text-align: center;
 }
 
+div.vis {
+  text-align: center;
+}
+
 
 svg {
   display: block;

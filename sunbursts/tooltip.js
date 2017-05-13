@@ -24,7 +24,8 @@ function show_tooltip(g, node) {
   var x = nbox.x + shift_x;
   var y = nbox.y + shift_y;
 
-  var text = node.attr("id");
+  // var text = node.attr("id");
+  var text = node.attr("label");
 
   // create tooltip
   var tooltip = g.append("text")
