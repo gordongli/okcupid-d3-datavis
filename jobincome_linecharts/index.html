@@ -2,27 +2,37 @@
 
 <head>
 <meta charset="utf-8">
-<style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200i,300,300i,400,400i,600,600i,700,700i,900,900i" rel="stylesheet">
+<link href="../style.css" rel="stylesheet" type="text/css">
 
+<style>
 .axis--x path {
   /*display: none;*/
 }
 
 .line {
   fill: none;
-  /*stroke: steelblue;*/
-  /*stroke-width: 1.5px;*/
   stroke-width: 0.75px;
 }
 
+.title {
+  font-size: 12px;
+  font-family: "Source Sans Pro", "Helvetica", sans-serif;
+  font-weight: bold;
+}
 
-.title { font-size: 10px; font-family: sans-serif; font-weight: bold;}
 /*svg { border: solid 1px #333; margin: 0px;}*/
-* {text-align: center;}
+/** {text-align: center;}*/
 
 .area { opacity: 0.5; }
 .points circle { opacity : 0.75; }
-.point text { font-family: sans-serif; visibility: hidden;}
+.point text {
+  font-size: 12px;
+  font-weight: normal;
+  font-family: "Source Sans Pro", "Helvetica", sans-serif;
+  visibility: hidden;
+}
 
 .hover text {
   visibility: visible;
@@ -33,6 +43,14 @@
   stroke-width: 0.5px;
 }
 
+body {
+  margin: 10vh 5em;
+}
+
+div.notvis {
+  margin: 0vh 10em;
+}
+
 </style>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script src="//d3js.org/d3.v4.min.js"></script>
@@ -40,12 +58,44 @@
 
 </head>
 <body>
+  <div class="notvis">
+    <div id="header" class="centertext">
+        <img id="avatar" src="../avatar.jpeg" style="width:100px;height:100px;">
+        <h1>Gordon Li</h1>
+        <p id="bio">I'm a second-year Computer Science major, taking the CS360 Data Visualization course at the <a href="http://usfca.edu">University of San Francisco</a> in Spring 2017 with <a href="http://sjengle.cs.usfca.edu">Professor Sophie Engle</a>.</p>
+        <div id="topcolorbar" class="colorful1">
+            <br>
+        </div>
+    </div>
+  </div>
+
+    <h1 class="centertext"><a href="../">OKCupid Profiles Data Visualizations</a></h1>
+    <h2 class="centertext">“My Self-Summary” Word Frequencies</h2>
+    <br>
+  </div>
+
+  <div class="vis"></div>
+
+  <div class="notvis">
+    <h2>Dataset</h2>
+    <p>This geospatial data visualization shows San Francisco 311 tree maintenance requests opened in 2016. The <a href="https://data.sfgov.org/City-Infrastructure/Tree-Maintenance-2016/d9d2-cuwu">Tree Maintenance 2016</a> data has 7,493 rows each representing one request, and includes columns about those requests such as their status, type, and time updated. The <a href="https://data.sfgov.org/Geographic-Locations-and-Boundaries/Supervisor-Districts-as-of-April-2012/xz9b-wyfc">Supervisor Districts as of April 2012</a> data provides map boundaries which match the districts listed in the tree maintenance data file.</p>
+
+    <h2>Interpretation</h2>
+    <p>This non-proportional symbol map shows the location of every individual request with a single point on the supervisor district map. The request type is encoded by color and labeled in the top-right legend. You can click on one of the categories in the legend to only show requests for that type, and click it once more to reveal all requests again. You can also hover over each point to see details of the request on the top-left.</p>
+
+    <h2>Learnings</h2>
+    <p>From this visualization, we can see that most of the 311 requests for tree maintenance seem to be for damaged trees. In particular, there appears to be a high concentration of damaged trees centered at the southwestern end of Market Street, where we find many requests along the street and in the surrounding area are due to vandalism. This contrasts, for example, to the vertical grouping around Sunset Boulevard in the Sunset district, where most of the incidents are of apparently natural causes (trees about to fall, fallen, dead, etc).</p>
+
+    <div id="bottomcolorbar" class="colorful2">
+        <br>
+    </div>
+  </div>
 </body>
 
 <script>
 
 // var margin = {top: 20, right: 80, bottom: 30, left: 50};
-var margin = {top: 20, right: 20, bottom: 20, left: 50};
+var margin = {top: 20, right: 10, bottom: 20, left: 30};
 var svgWidth = 360;
 var svgHeight = 160;
 var width = svgWidth - margin.left - margin.right;
@@ -124,7 +174,7 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
 
   console.log("data with line_data", data);
 
-  var svgs = d3.select("body")
+  var svgs = d3.select("body").select("div.vis")
               .selectAll("svg")
               .data(data)
               .enter()
@@ -240,7 +290,7 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
 
 
     d3.selectAll(".point").append("text")
-       .attr("class", "ageLabel")
+       .attr("class", "label")
        .attr("x", width)
        .attr("y", -5)
        .attr("dy", "0.35em")
@@ -250,7 +300,7 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
 
 
     d3.selectAll(".point").append("text")
-       .attr("class", "incomeLabel")
+       .attr("class", "label")
        .attr("x", width)
        .attr("y", -5)
        .attr("dy", "1.35em")
@@ -259,49 +309,13 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
        .text(function(d) { return  "$" + d.income; });
 
     d3.selectAll(".point").append("text")
-       .attr("class", "profilesLabel")
+       .attr("class", "label")
        .attr("x", width)
        .attr("y", -5)
        .attr("dy", "2.35em")
        .attr("font-size", "10px")
        .attr("text-anchor", "end")
        .text(function(d) { return d.profiles + " profiles"; });
-
-  //  d3.selectAll(".point").append("text")
-  //     .attr("class", "incomeLabel")
-  //     .attr("x", function(d) { return x(d.age); })
-  //     .attr("y", function(d) { return y(d.income); })
-  //     // .attr("dx", "0.35em")
-  //     .attr("dx", function(d) { return d.age <= 60 ? "0.35em" : "-0.35em"; })
-  //     .attr("dy", "1.35em")
-  //     .attr("font-size", "10px")
-  //     // .attr("text-anchor", "start")
-  //     .attr("text-anchor", function(d) { return d.age <= 60 ? "start" : "end"; })
-  //     .text(function(d) { return  "$" + d.income; });
-
-  // d3.selectAll(".point").append("text")
-  //    .attr("class", "ageLabel")
-  //    .attr("x", function(d) { return x(d.age); })
-  //    .attr("y", function(d) { return y(d.income); })
-  //   //  .attr("dx", "0.35em")
-  //    .attr("dx", function(d) { return d.age <= 60 ? "0.35em" : "-0.35em"; })
-  //    .attr("dy", "0.35em")
-  //    .attr("font-size", "10px")
-  //   //  .attr("text-anchor", "start")
-  //    .attr("text-anchor", function(d) { return d.age <= 60 ? "start" : "end"; })
-  //    .text(function(d) { return d.age + " years old"; });
-
- // d3.selectAll(".point").append("text")
- //    .attr("class", "profilesLabel")
- //    .attr("x", function(d) { return x(d.age); })
- //    .attr("y", function(d) { return y(d.income); })
- //    // .attr("dx", "0.35em")
- //    .attr("dx", function(d) { return d.age <= 60 ? "0.35em" : "-0.35em"; })
- //    .attr("dy", "-0.6em")
- //    .attr("font-size", "10px")
- //    // .attr("text-anchor", "start")
- //    .attr("text-anchor", function(d) { return d.age <= 60 ? "start" : "end"; })
- //    .text(function(d) { return d.profiles + " profiles"; });
 
 
   // too many to display at once
