@@ -124,7 +124,7 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
 
   // configure size, margin, and circle radius
   var config = {
-      w: 640,
+      w: 720,
       h: 640,
       r: 4,
       pad: 20
@@ -162,15 +162,15 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
       var color = d3.scaleOrdinal()
       color.domain([
         "m","f",
-        "college", "less than college", "more than college", "NA",
-        "white", "other", "asian", "hispanic", "black",
+        "white", "asian", "hispanic", "black", "other",
+        "more than college", "college", "less than college", "NA",
+        "all"
       ]);
       color.range([
         "rgb(56,109,164)", "rgb(215,61,61)",
-        'rgb(161,217,155)','rgb(229,245,224)','rgb(49,163,84)', "#e6e6e6",
-        // "hsl(120, 45%, 70%)", "hsl(120, 45%, 90%)", "hsl(120, 45%, 50%)", "#e6e6e6",
-        // 'rgb(173,221,142)','rgb(247,252,185)','rgb(49,163,84)', "#e6e6e6",
-        "#ffdbac", "#e6e6e6", "#f1c27d", "#c68642", "#8d5524"
+        "#ffdbac", "#f1c27d", "#c68642", "#8d5524", "#e6e6e6",
+        'rgb(49,163,84)','rgb(161,217,155)','rgb(229,245,224)', "#e6e6e6",
+        "#e6e6e6"
       ]);
 
 
@@ -191,10 +191,12 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
           .attr("label", function(d) {
             if (d.parent != null) {
                 var percentOfParent = d3.format(".0%")(d.value / d.parent.value);
-                return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+                return d.data.label + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+                // return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
             }
             else {
-                return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
+                return d.data.label + ": " + d3.format(",")(d.value) + " (100%)";
+                // return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
             }
           })
           .style("fill", function(d) { return color(d.data.label)})
@@ -209,7 +211,7 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
           })
           .on("click", click);
 
-  d3.select("div#vis1 path#all").style("fill", "#e6e6e6");
+  // d3.select("div#vis1 path#all").style("fill", "#e6e6e6");
 
 
   function click(d) {
@@ -224,6 +226,95 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
     .selectAll("path")
       .attrTween("d", function(d) { return function() { return arc(d); }; });
   }
+
+
+  function drawLegend(dimension, categories, x_shift, y_shift) {
+    var legend = g.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      // .attr("text-anchor", "end")
+      .attr("text-anchor", "end")
+      .selectAll("g")
+      .data(categories)
+      .enter().append("g")
+      // .attr("transform", function(d, i) { return "translate(" + i * 20 + ",0)"; });
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+      var toleft = -config.w/2 + config.pad*2;
+      var totop = -config.h/2 + config.pad;
+      var squareside = 19;
+
+      legend.append("rect")
+      .attr("x", toleft + x_shift)
+      .attr("y", totop + y_shift)
+      .attr("width", squareside)
+      .attr("height", squareside)
+      .attr("fill", color);
+
+      legend.append("text")
+      .attr("x", toleft - 3 + x_shift)
+      .attr("y", totop + squareside/2 + y_shift)
+      .attr("dy", "0.32em")
+      .text(function(d) { console.log(d); return d; });
+
+      var legendWidth = toleft;
+
+      g.append("g")
+      .append("text")
+      .attr("x", toleft + squareside + x_shift)
+      .attr("y", totop - 6 + y_shift)
+      .attr("fill", "#000")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "end")
+      .text(dimension);
+  };
+
+  drawLegend("sex", ["m","f"], 0, 0);
+  // drawLegend("ethnicity",["white","asian","hispanic","black","other"], config.w-config.pad*4, 0);
+  // drawLegend("education",["more than college","college","less than college"], 0, config.pad*3.5);
+  drawLegend("ethnicity",["white","asian","hispanic","black","other"], 0, config.pad*3.5);
+  drawLegend("education",["more than college","college","less than college", "NA"], config.w-config.pad*4, 0);
+
+    // var legend = g.append("g")
+    //   .attr("font-family", "sans-serif")
+    //   .attr("font-size", 10)
+    //   // .attr("text-anchor", "end")
+    //   .attr("text-anchor", "end")
+    //   .selectAll("g")
+    //   .data(color.domain().slice(0, color.domain.length-2))
+    //   .enter().append("g")
+    //   // .attr("transform", function(d, i) { return "translate(" + i * 20 + ",0)"; });
+    //   .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+    //
+    //   legend.append("rect")
+    //   .attr("x", -config.w/2 + config.pad*2)
+    //   // .attr("x", config.w - 19)
+    //   .attr("y", -config.h/2 + config.pad*2)
+    //   .attr("width", 19)
+    //   .attr("height", 19)
+    //   .attr("fill", color);
+    //
+    //   legend.append("text")
+    //   .attr("x", -config.w/2 + config.pad*2 - 3)
+    //   // .attr("y", 9.5)
+    //   .attr("y", -config.h/2 + config.pad*2 + 9.5)
+    //   .attr("dy", "0.32em")
+    //   .text(function(d) { console.log(d); return d; });
+    //
+    //   var legendWidth = -config.w/2 + config.pad*2;
+    //
+    //   g.append("g")
+    //   .append("text")
+    //   .attr("x", legendWidth)
+    //   .attr("y", -config.h/2 + config.pad*1.5)
+    //   .attr("fill", "#000")
+    //   .attr("font-family", "sans-serif")
+    //   .attr("font-size", 10)
+    //   .attr("font-weight", "bold")
+    //   .attr("text-anchor", "middle")
+    //   .text("SF Regions");
 
 });
 
@@ -300,7 +391,7 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
 
   // configure size, margin, and circle radius
   var config = {
-      w: 640,
+      w: 720,
       h: 640,
       r: 4,
       pad: 20
@@ -369,10 +460,12 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
           .attr("label", function(d) {
             if (d.parent != null) {
                 var percentOfParent = d3.format(".0%")(d.value / d.parent.value);
-                return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+                return d.data.label + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+                // return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
             }
             else {
-                return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
+                return d.data.label + ": " + d3.format(",")(d.value) + " (100%)";
+                // return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
             }
           })
           .style("fill", function(d) { return color(d.data.label)})
@@ -401,6 +494,56 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
       .selectAll("path")
         .attrTween("d", function(d) { return function() { return arc(d); }; });
   }
+
+  function drawLegend(dimension, categories, x_shift, y_shift) {
+    var legend = g.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      // .attr("text-anchor", "end")
+      .attr("text-anchor", "end")
+      .selectAll("g")
+      .data(categories)
+      .enter().append("g")
+      // .attr("transform", function(d, i) { return "translate(" + i * 20 + ",0)"; });
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+      var toleft = -config.w/2 + config.pad*2;
+      var totop = -config.h/2 + config.pad;
+      var squareside = 19;
+
+      legend.append("rect")
+      .attr("x", toleft + x_shift)
+      .attr("y", totop + y_shift)
+      .attr("width", squareside)
+      .attr("height", squareside)
+      .attr("fill", color);
+
+      legend.append("text")
+      .attr("x", toleft - 3 + x_shift)
+      .attr("y", totop + squareside/2 + y_shift)
+      .attr("dy", "0.32em")
+      .text(function(d) { console.log(d); return d; });
+
+      var legendWidth = toleft;
+
+      g.append("g")
+      .append("text")
+      .attr("x", toleft + squareside + x_shift)
+      .attr("y", totop - 6 + y_shift)
+      .attr("fill", "#000")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "end")
+      .text(dimension);
+  };
+
+  drawLegend("sex", ["m","f"], 0, 0);
+  drawLegend("orientation",["straight","bisexual","gay"], 0, config.pad*3.5);
+  // drawLegend("orientation",["straight","bisexual","gay"], 0, config.h*0.75);
+  drawLegend("religion",["agnosticism|atheism", "buddhism|hinduism", "christianity|catholicism", "judaism|islam", "NA|other"], config.w-config.pad*4, 0);
+
 });
+
 
 </script>
