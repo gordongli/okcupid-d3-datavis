@@ -1,34 +1,48 @@
-var margin = {top: 20, right: 20, bottom: 30, left: 35},
+var margin = {top: 30, right: 25, bottom: 30, left: 35},
     width = 800 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
 
 var x = d3.scaleLog()
     .range([0, width]);
 var y = d3.scaleLog()
-    .range([height, 0]);
+    .range([height, 10]);
 
 // var color = d3.scaleOrdinal(d3.schemeCategory10);
 var xAxis = d3.axisBottom(x).ticks(10, ".0%");
 var yAxis = d3.axisLeft(y).ticks(10, ".0%");
-var color = d3.scaleSequential(d3.interpolateRdBu);
+var color = d3.scaleSequential(d3.interpolateRdYlBu);
 // console.log(d3.interpolateRdBu);
 // color.range(d3.schemeRdBu);
 
-var svg = d3.select("div#vis").append("svg")
+var g = d3.select("div#vis").append("svg")
     .attr("class", "scatter")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-
-// var plot = d3.select(".scatterplot").append("g")
   .append("g")
     .attr("class", "plot")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .style("fill", "none")
-        .style("pointer-events", "all");
+// rect to allow zoom all over
+g.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all");
+
+// clip path for zoom
+var clipPath = g.append('defs')
+    .append('clipPath')
+    .attr('id', 'clip')
+    .append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', width)
+      .attr('height', height);
+
+const main = g.append('g')
+  .attr('class', 'main')
+  .attr('clip-path', 'url(#clip)');
+
 
 var scale = 1;
 
@@ -49,6 +63,8 @@ var scale = 1;
             .attr("stroke-width", 1 / scale + "px");
 
             dots.select("circle")
+              .attr("stroke-width", 0.25 / scale + "px")
+              .attr("stroke", "black")
               .attr("r", 3 / scale);
 
             dots.select("text")
@@ -62,19 +78,19 @@ var scale = 1;
 
 
           d3.selectAll((".dot")).filter(function(d) {
-              return (d.female_male_ratio < (0.75 * scale / 3) || d.female_male_ratio > (1.75 / scale * 3))
-                // || d.male_ratio > 0.75 || d.female_ratio > 0.75
+              return (d.female_male_ratio < (0.75 * scale / 4) || d.female_male_ratio > (1.75 / scale * 4)
+                || (d.male_ratio > 0.5 || d.female_ratio > 0.5))
             }).classed("alwaysshow", true);
 
             d3.selectAll((".dot")).filter(function(d) {
-              return !(d.female_male_ratio < (0.75 * scale) || d.female_male_ratio > (1.75 / scale))
-
+              return !(d.female_male_ratio < (0.75 * scale) || d.female_male_ratio > (1.75 / scale)
+                || (d.male_ratio > 0.5 || d.female_ratio > 0.5))
               // return !(d.female_male_ratio < (0.75 * scale) || d.female_male_ratio > (1.75 / scale))
                   // || d.male_ratio > 0.75 || d.female_ratio > 0.75
               }).classed("alwaysshow", false);
 
         }
-  svg.call(zoom);
+  g.call(zoom);
   // d3.select(".plot").call(zoom);
 
 
@@ -88,13 +104,13 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
 
   x.domain(d3.extent(data, function(d) { return d.male_ratio; })).nice();
   y.domain(d3.extent(data, function(d) { return d.female_ratio; }));
-  color.domain([2, 0]);
+  color.domain([2, 0.16]);
   // color.domain([2, 0]);
   // color.domain(d3.extent(data, function(d) { return d.female_male_ratio; })).nice();
   // color.domain(color.domain().reverse());
   console.log(color.domain());
 
-  var gX = svg.append("g")
+  var gX = g.append("g")
       .attr("class", "x-axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
@@ -105,7 +121,7 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
       .style("text-anchor", "end")
       .text("Male Word Frequency");
 
-  var gY = svg.append("g")
+  var gY = g.append("g")
       .attr("class", "y-axis")
       .call(yAxis)
     .append("text")
@@ -117,7 +133,7 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
       .text("Female Word Frequency")
 
 
-    var dotsgroup = svg.append("g")
+    var dotsgroup = main.append("g")
     .attr("class", "dots");
 
     var dotgroup = dotsgroup.selectAll(".dot")
@@ -134,7 +150,9 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
       .attr("r", 3)
       .attr("cx", function(d) { return x(d.male_ratio); })
       .attr("cy", function(d) { return y(d.female_ratio); })
-      .style("fill-opacity", 0.6)
+      .attr("stroke-width", 0.25 / scale + "px")
+      .attr("stroke", "black")
+      .style("fill-opacity", 0.8)
       .style("fill", function(d) { return color(d.female_male_ratio); });
 
       // how about some text labels?
@@ -164,8 +182,8 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
 
 
     dotgroup.filter(function(d) {
-        return (d.female_male_ratio < (0.75 / scale) || d.female_male_ratio > (1.75 / scale))
-          // || d.male_ratio > 0.75 || d.female_ratio > 0.75
+        return (d.female_male_ratio < (0.75 / scale) || d.female_male_ratio > (1.75 / scale)
+          || (d.male_ratio > 0.5 || d.female_ratio > 0.5));
       }).classed("alwaysshow", true);
 
     // dotcircle.on("zoom", function(d) {
@@ -210,7 +228,7 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
 
   // add details widget
   // https://bl.ocks.org/mbostock/1424037
-  var details = svg.append("foreignObject")
+  var details = g.append("foreignObject")
     .attr("id", "details")
     .attr("width", 360)
     // .attr("width", 960)
@@ -229,94 +247,96 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
 
 
   var plot = {
-  "width": svg.attr("width") - margin.left - margin.right,
-  "height": svg.attr("height") - margin.top - margin.bottom
-};
+    "width": g.attr("width") - margin.left - margin.right,
+    "height": g.attr("height") - margin.top - margin.bottom
+  };
+
   var groups = {};
   var scales = {};
   var axes = {};
   scales["color"] = color;
   var legend = { "width": 100, "height": 20 };
 
-  // lets try to make a color legend
+    // lets try to make a color legend
 
-groups["legend"] = svg.append("g")
-.attr("id", "color")
-.attr("class", "axis");
+  groups["legend"] = g.append("g")
+  .attr("id", "color")
+  .attr("class", "axis");
 
-// our color scale doesn't have an invert() function
-// and we need some way of mapping 0% and 100% to our domain
-// so we'll create a scale to reverse that mapping
-scales["percent"] = d3.scaleLinear()
-// .domain([0, 100].reverse()) // since we reversed the color
-.domain([0, 100])
-.range(scales.color.domain());
+  // our color scale doesn't have an invert() function
+  // and we need some way of mapping 0% and 100% to our domain
+  // so we'll create a scale to reverse that mapping
+  scales["percent"] = d3.scaleLinear()
+  // .domain([0, 100].reverse()) // since we reversed the color
+  .domain([0, 100])
+  .range(scales.color.domain());
 
-// setup gradient for legend
-// http://bl.ocks.org/mbostock/1086421
-svg.append("defs")
-.append("linearGradient")
-.attr("id", "gradient")
-.selectAll("stop")
-.data(d3.ticks(0, 100, 10))
-.enter()
-.append("stop")
-.attr("offset", function(d) {
-  return d + "%";
-})
-.attr("stop-color", function(d) {
-  // return color(scales.percent(d));
-  return scales.color(scales.percent(d));
-});
+  // setup gradient for legend
+  // http://bl.ocks.org/mbostock/1086421
+  g.append("defs")
+  .append("linearGradient")
+  .attr("id", "gradient")
+  .selectAll("stop")
+  .data(d3.ticks(0, 100, 10))
+  .enter()
+  .append("stop")
+  .attr("offset", function(d) {
+    return d + "%";
+  })
+  .attr("stop-color", function(d) {
+    // return color(scales.percent(d));
+    return scales.color(scales.percent(d));
+  });
 
-// draw the color rectangle with gradient
-groups.legend.append("rect")
-.attr("x", 0)
-.attr("y", 0)
-.attr("width", legend.width)
-.attr("height", legend.height)
-.attr("fill", "url(#gradient)");
+  // draw the color rectangle with gradient
+  groups.legend.append("rect")
+  .attr("x", 0)
+  .attr("y", 0)
+  .attr("width", legend.width)
+  .attr("height", legend.height)
+  .attr("fill", "url(#gradient)");
 
-// lets also draw an axis with tick marks at the top
-scales["legend"] = d3.scaleLinear()
-// .domain(scales.color.domain().reverse())
-.domain(scales.color.domain())
-.range([0, legend.width]);
+  // lets also draw an axis with tick marks at the top
+  scales["legend"] = d3.scaleLinear()
+  // .domain(scales.color.domain().reverse())
+  .domain(scales.color.domain())
+  .range([0, legend.width]);
 
-axes["legend"] = d3.axisTop(scales.legend)
-.tickValues(scales.color.domain())
-.tickFormat(d3.format(".0r"));
+  axes["legend"] = d3.axisTop(scales.legend)
+  .tickValues(scales.color.domain())
+  .tickFormat(d3.format(".0r"));
 
-groups.legend.call(axes.legend);
+  groups.legend.call(axes.legend);
 
-// tweak the tick marks
-groups.legend.selectAll("text").each(function(d, i) {
-if (d == scales.legend.domain()[0]) {
-  d3.select(this).attr("text-anchor", "start");
-}
-else if (d == scales.legend.domain()[1]) {
-  d3.select(this).attr("text-anchor", "end");
-}
-});
+  // tweak the tick marks
+  groups.legend.selectAll("text").each(function(d, i) {
+  if (d == scales.legend.domain()[0]) {
+    d3.select(this).attr("text-anchor", "start");
+  }
+  else if (d == scales.legend.domain()[1]) {
+    d3.select(this).attr("text-anchor", "end");
+  }
+  });
 
-// add text label at the bottom
-groups.legend.append("text")
-.attr("x", legend.width / 2)
-.attr("y", legend.height)
-.attr("dx", 0)
-.attr("dy", "1em")
-.attr("text-anchor", "middle")
-.text("Female/Male Frequency");
+  // add text label at the bottom
+  groups.legend.append("text")
+  .attr("x", legend.width / 2)
+  .attr("y", legend.height)
+  .attr("dx", 0)
+  .attr("dy", "1em")
+  .attr("text-anchor", "middle")
+  .text("Female/Male Frequency");
 
-// shift to a nice location
-groups.legend.attr("transform", translate(width-legend.width, margin.top));
+  // shift to a nice location
+  groups.legend.attr("transform", translate(width-legend.width, height-legend.height*4));
+  // groups.legend.attr("transform", translate(width-legend.width, margin.top));
 
-/*
-* returns a translate string for the transform attribute
-*/
-function translate(x, y) {
-return "translate(" + String(x) + "," + String(y) + ")";
-}
+  /*
+  * returns a translate string for the transform attribute
+  */
+  function translate(x, y) {
+  return "translate(" + String(x) + "," + String(y) + ")";
+  }
 
 
 
