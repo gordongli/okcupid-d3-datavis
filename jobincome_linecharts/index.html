@@ -306,7 +306,7 @@ d3.tsv("sheet_7_transpose.tsv", type, function(error, data) {
        .attr("dy", "1.35em")
        .attr("font-size", "10px")
        .attr("text-anchor", "end")
-       .text(function(d) { return  "$" + d.income; });
+       .text(function(d) { return  "$" + d3.format(",")(d.income); });
 
     d3.selectAll(".point").append("text")
        .attr("class", "label")
