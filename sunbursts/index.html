@@ -194,11 +194,13 @@ d3.csv("eth_edu_pivot_profiles.csv", function(error, data) {
           .attr("label", function(d) {
             if (d.parent != null) {
                 var percentOfParent = d3.format(".0%")(d.value / d.parent.value);
-                return d.data.label + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+                return d.data.label + ": " + percentOfParent + " of " + d.parent.id + " (" + d3.format(",")(d.value) + ")";
+                // return d.data.label + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
                 // return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
             }
             else {
-                return d.data.label + ": " + d3.format(",")(d.value) + " (100%)";
+                return d.data.label + ": 100% (" + d3.format(",")(d.value) + ")";
+                // return d.data.label + ": " + d3.format(",")(d.value) + " (100%)";
                 // return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
             }
           })
@@ -463,11 +465,13 @@ d3.csv("ori_rel_pivot_profiles.csv", function(error, data) {
           .attr("label", function(d) {
             if (d.parent != null) {
                 var percentOfParent = d3.format(".0%")(d.value / d.parent.value);
-                return d.data.label + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
+                return d.data.label + ": " + percentOfParent + " of " + d.parent.id + " (" + d3.format(",")(d.value) + ")";
+                // return d.data.label + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
                 // return d.data.id + ": " + d3.format(",")(d.value) + " (" + percentOfParent + " of " + d.parent.id + ")";
             }
             else {
-                return d.data.label + ": " + d3.format(",")(d.value) + " (100%)";
+                return d.data.label + ": 100% (" + d3.format(",")(d.value) + ")";
+                // return d.data.label + ": " + d3.format(",")(d.value) + " (100%)";
                 // return d.data.id + ": " + d3.format(",")(d.value) + " (100%)";
             }
           })
