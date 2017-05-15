@@ -127,6 +127,7 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
     .append("text")
       .attr("class", "label")
       .attr("transform", "rotate(-90)")
+      .attr("x", -10)
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
@@ -202,12 +203,12 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
             // d3.select(this).select("circle").classed("active", true);
 
             body.html("<table border=0 cellspacing=0 cellpadding=2>" + "\n" +
-              "<tr><th>Word (stem):</th><td>" + d.word + "</td></tr>" + "\n" +
+              "<tr><th>Word (Stem):</th><td>" + d.word + "</td></tr>" + "\n" +
               "<tr><th>Male Count:</th><td>" + d3.format("d")(d.male) + "</td></tr>" + "\n" +
               "<tr><th>Female Count:</th><td>" + d3.format("d")(d.female) + "</td></tr>" + "\n" +
-              "<tr><th>Male Frequency:</th><td>" + d3.format(".1%")(d.male_ratio) + "</td></tr>" + "\n" +
-              "<tr><th>Female Frequency:</th><td>" + d3.format(".1%")(d.female_ratio) + "</td></tr>" + "\n" +
-              "<tr><th>Female/Male Frequency:</th><td>" + d3.format(".3r")(d.female_male_ratio) + "</td></tr>" + "\n" +
+              "<tr><th>Male Rate:</th><td>" + d3.format(".1%")(d.male_ratio) + "</td></tr>" + "\n" +
+              "<tr><th>Female Rate:</th><td>" + d3.format(".1%")(d.female_ratio) + "</td></tr>" + "\n" +
+              "<tr><th>Female/Male Ratio:</th><td>" + d3.format(".3r")(d.female_male_ratio) + "</td></tr>" + "\n" +
               "</table>");
 
             details.style("visibility", "visible");
@@ -328,7 +329,7 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
   .attr("dx", 0)
   .attr("dy", "1em")
   .attr("text-anchor", "middle")
-  .text("Female/Male Frequency");
+  .text("Female/Male Ratio");
 
   // shift to a nice location
   groups.legend.attr("transform", translate(width-legend.width, height-legend.height*4));
