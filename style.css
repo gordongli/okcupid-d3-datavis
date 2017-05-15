@@ -2,10 +2,9 @@ body {
   background-color: whitesmoke;
   font-family: "Source Sans Pro", "Helvetica", sans-serif;
   font-size: 13pt;
-  margin: 10vh 10em;
-  /* want responsive margin and no min-width, but it messes up the scatterplot table */
-  /*margin: 10vh 20vw;*/
-  min-width: 1000px;
+  /*margin: 10vh 10em;*/
+  margin: 10vh 20vw;
+  /*min-width: 1000px;*/
   /*max-width: 1200px;*/
 }
 

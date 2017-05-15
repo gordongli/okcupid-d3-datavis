@@ -230,17 +230,20 @@ d3.csv("tableau_mf_wordfreq_data.csv", function(error, data) {
   // https://bl.ocks.org/mbostock/1424037
   var details = g.append("foreignObject")
     .attr("id", "details")
-    .attr("width", 360)
-    // .attr("width", 960)
-    .attr("height", 600)
-    .attr("x", -2*margin.left)
+    // .attr("width", 360)
+    .attr("width", 200)
+    .attr("height", 150)
+    .attr("x", margin.left)
     .attr("y", margin.top);
+    // .attr("x", -2*margin.left)
+    // .attr("y", margin.top);
 
   var body = details.append("xhtml:body")
     .style("text-align", "left")
     .style("background", "whitesmoke")
-    // .style("background", "none")
     .style("font-size", "10pt")
+    // this is <body> too, so set the margin manually to show table correctly
+    .style("margin", "0px")
     .html("<p>N/A</p>");
 
   details.style("visibility", "hidden");
