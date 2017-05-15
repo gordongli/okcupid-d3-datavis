@@ -1,0 +1,23 @@
+splitrows col: column1 on: '\r\n' quote: '\"'
+split col: column1 on: ',' limit: 21 quote: '\"'
+header
+extract col: religion on: /\w+.??/ limit: 1
+extract col: ethnicity on: /[a-zA-Z ]+[a-zA-Z]/ limit: 1
+extract col: education on: `college/university|masters program|NA|two-year college|high school|space camp|law school|med school|ph.d program`
+drop col: age, body_type, diet, drinks, drugs, education, ethnicity, height, income, job, last_online, location, offspring, pets, religion, sign, smokes, speaks, status, id
+rename col: education1 to: 'education'
+rename col: ethnicity1 to: 'ethnicity'
+rename col: religion1 to: 'religion'
+replace col: ethnicity with: 'other' on: `pacific islander|native american|middle eastern|indian|NA`
+replace col: education with: 'more than college' on: `masters program|ph.d program|med school|law school`
+replace col: education with: 'college' on: `college/university|two-year college`
+replace col: education with: 'less than college' on: `space camp|high school`
+replace col: religion with: 'agnosticism|atheism' on: `agnosticism|atheism`
+replace col: religion with: 'christianity|catholicism' on: `christianity|catholicism`
+replace col: religion with: 'judaism|islam' on: `judaism|islam`
+replace col: religion with: 'buddhism|hinduism' on: `buddhism|hinduism`
+replace col: religion with: 'NA|other' on: `NA|other`
+pivot col: sex value: count() group: sex,orientation,religion limit: 200
+derive value: row_count_f + row_count_m as: 'row_count'
+drop col: row_count_f,row_count_m
+sort order: -sex,-orientation,religion

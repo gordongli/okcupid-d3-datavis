@@ -5,7 +5,6 @@
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200i,300,300i,400,400i,600,600i,700,700i,900,900i" rel="stylesheet">
   <link href="../style.css" rel="stylesheet" type="text/css">
 
-  <title>Male-Female Word Frequency Scatter Plot</title>
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
@@ -58,12 +57,15 @@
 
 
   </style>
+
+  <title>CS360 Data Visualization Final Project</title>
+
 </head>
 
 <body>
   <div id="header" class="centertext">
       <img id="avatar" src="../avatar.jpeg" style="width:100px;height:100px;">
-      <h1>Gordon Li</h1>
+      <h1><a href=mailto:gli17@usfca.edu>Gordon Li</a></h1>
       <p id="bio">I'm a second-year Computer Science major, taking the CS360 Data Visualization course at the <a href="http://usfca.edu">University of San Francisco</a> in Spring 2017 with <a href="http://sjengle.cs.usfca.edu">Professor Sophie Engle</a>.</p>
       <div id="topcolorbar" class="colorful1">
           <br>
@@ -71,7 +73,7 @@
   </div>
 
   <h1 class="centertext"><a href="../">OKCupid Profiles Data Visualizations</a></h1>
-  <h2 class="centertext">“My Self-Summary” Word Frequencies</h2>
+  <h2 class="centertext">“My Self-Summary” Word Usage</h2>
   <br>
 
   <div id="vis"></div>
@@ -79,15 +81,13 @@
   <script src="scatterplot.js"></script>
 
 
-<h2>Dataset</h2>
-<p>This geospatial data visualization shows San Francisco 311 tree maintenance requests opened in 2016. The <a href="https://data.sfgov.org/City-Infrastructure/Tree-Maintenance-2016/d9d2-cuwu">Tree Maintenance 2016</a> data has 7,493 rows each representing one request, and includes columns about those requests such as their status, type, and time updated. The <a href="https://data.sfgov.org/Geographic-Locations-and-Boundaries/Supervisor-Districts-as-of-April-2012/xz9b-wyfc">Supervisor Districts as of April 2012</a> data provides map boundaries which match the districts listed in the tree maintenance data file.</p>
+<h2>Data Processing</h2>
+<p>The data for this scatterplot was calculated from essay0 (“my self-summary”) in the original dataset. R and its libraries for text analysis were used to combine submissions from male and female profiles into a corpus for each gender. Each corpus was cleaned (of punctuation, stopwords such as ‘I’, ‘am’, etc.) and the words were stemmed (so ‘dance’, ‘dancer’, and ‘dancing’ would all be counted with their stem ‘danc’) before creating their document term matrix. A word-frequency data frame for men and women was made from this and inner joined on the words into a table. This table was then exported and edited in Excel to obtain each gender's frequency rate (total number of times word was used in [gender] profiles / total number of [gender] profiles) along with a ratio between these rates. This table was then imported to Tableau for prototyping, where frequency rates below 1% were filtered out for the final data to be used in the D3 visualization. You may view the
+  <a href="wordfreq_r_script.txt" target="_blank">R script here</a>.
+</p>
 
-<h2>Interpretation</h2>
-<p>This non-proportional symbol map shows the location of every individual request with a single point on the supervisor district map. The request type is encoded by color and labeled in the top-right legend. You can click on one of the categories in the legend to only show requests for that type, and click it once more to reveal all requests again. You can also hover over each point to see details of the request on the top-left.</p>
-
-<h2>Learnings</h2>
-<p>From this visualization, we can see that most of the 311 requests for tree maintenance seem to be for damaged trees. In particular, there appears to be a high concentration of damaged trees centered at the southwestern end of Market Street, where we find many requests along the street and in the surrounding area are due to vandalism. This contrasts, for example, to the vertical grouping around Sunset Boulevard in the Sunset district, where most of the incidents are of apparently natural causes (trees about to fall, fallen, dead, etc).</p>
-
+<h2>Findings</h2>
+<p>We see in this visualization the rates at which people use words in their essay response to the “my self-summary” prompt. For example, some of the most highly used words are ‘love’, ‘like’, and ‘life’. We can also compare rates of usage between the genders. For example, while women are more likely to describe themselves with adjectives like independent, silly, sweet, and warm, men are more likely to describe themselves as cool, company, and laid(-back?). We can also find differences in verbs and nouns: notable ones include dance, dog, yoga, sing, dress, and garden for females in contrast to sport, build, science, snowboard, guitar, and computer for males. </p>
 
 <div id="bottomcolorbar" class="colorful2">
     <br>

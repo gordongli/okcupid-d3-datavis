@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200i,300,300i,400,400i,600,600i,700,700i,900,900i" rel="stylesheet">
 <link href="../style.css" rel="stylesheet" type="text/css">
+<title>CS360 Data Visualization Final Project</title>
 
 <style>
 /*svg { border: solid 1px #333; }*/
@@ -27,7 +28,7 @@
 <body>
   <div id="header" class="centertext">
       <img id="avatar" src="../avatar.jpeg" style="width:100px;height:100px;">
-      <h1>Gordon Li</h1>
+      <h1><a href=mailto:gli17@usfca.edu>Gordon Li</a></h1>
       <p id="bio">I'm a second-year Computer Science major, taking the CS360 Data Visualization course at the <a href="http://usfca.edu">University of San Francisco</a> in Spring 2017 with <a href="http://sjengle.cs.usfca.edu">Professor Sophie Engle</a>.</p>
       <div id="topcolorbar" class="colorful1">
           <br>
@@ -35,19 +36,17 @@
   </div>
 
   <h1 class="centertext"><a href="../">OKCupid Profiles Data Visualizations</a></h1>
+  <h2 class="centertext">Categories by Gender</h2>
   <br>
 
-  <div class="vis" id="vis1"> <h2>Ethnicity and Education</h2> </div>
-  <div class="vis" id="vis2"> <h2>Orientation and Religion</h2> </div>
+  <div class="vis" id="vis1"> <h3>Ethnicity and Education</h3> </div>
+  <div class="vis" id="vis2"> <h3>Orientation and Religion</h3> </div>
 
-  <h2>Dataset</h2>
-  <p>This geospatial data visualization shows San Francisco 311 tree maintenance requests opened in 2016. The <a href="https://data.sfgov.org/City-Infrastructure/Tree-Maintenance-2016/d9d2-cuwu">Tree Maintenance 2016</a> data has 7,493 rows each representing one request, and includes columns about those requests such as their status, type, and time updated. The <a href="https://data.sfgov.org/Geographic-Locations-and-Boundaries/Supervisor-Districts-as-of-April-2012/xz9b-wyfc">Supervisor Districts as of April 2012</a> data provides map boundaries which match the districts listed in the tree maintenance data file.</p>
+  <h2>Data Processing</h2>
+  <p>The data for these sunbursts was first processed in Trifacta to simplify numerous categories in selected columns of the original dataset. Education is condensed into three main categories (above, at, or below college level), and represents at least attendence at that level (disregarding status such as graduated, working on, or dropped out); ethnicity only considers the first one listed, and religion combines similar pairs and ignores level of devoutness. A pivot table was then made and exported to CSV, after which processing into a hierarchy was done in D3. You may view the Trifacta recipe for the <a href="eth_edu_pivot_profiles_wrangle.txt" target="_blank">first</a> and <a href="eth_edu_pivot_profiles_wrangle.txt" target="_blank">second</a> visualization.</p>
 
-  <h2>Interpretation</h2>
-  <p>This non-proportional symbol map shows the location of every individual request with a single point on the supervisor district map. The request type is encoded by color and labeled in the top-right legend. You can click on one of the categories in the legend to only show requests for that type, and click it once more to reveal all requests again. You can also hover over each point to see details of the request on the top-left.</p>
-
-  <h2>Learnings</h2>
-  <p>From this visualization, we can see that most of the 311 requests for tree maintenance seem to be for damaged trees. In particular, there appears to be a high concentration of damaged trees centered at the southwestern end of Market Street, where we find many requests along the street and in the surrounding area are due to vandalism. This contrasts, for example, to the vertical grouping around Sunset Boulevard in the Sunset district, where most of the incidents are of apparently natural causes (trees about to fall, fallen, dead, etc).</p>
+  <h2>Findings</h2>
+  <p>In the Ethnicity and Education sunburst, we find there are more males than females, but in both cases, the more stereotypically light your skin is, the more you are represented in this population. We can also find in females of this population somewhat surprisingly that the rates of college attendance are the same for whites and blacks. In the Orientation and Religion sunburst, we find that while most people are straight, there are much more gay than bisexual males, in contrast to more bisexual than gay females. We can also find  somewhat surprisingly that in males, the rates of christianity|catholicism are the same for both straight and gay, in contrast to the much lower rate for bisexuals. </p>
 
   <div id="bottomcolorbar" class="colorful2">
       <br>

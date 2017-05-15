@@ -1,0 +1,44 @@
+library(stringr)
+library(dplyr)
+library(tm)
+library(SnowballC)
+
+profiles <- read.csv(file="profiles.csv", header=TRUE, stringsAsFactors = FALSE)
+
+essay0 <- select(profiles, essay0)
+essay0 <- apply(essay0, MARGIN=1, FUN=paste, collapse=" ")
+essay0 <- str_replace_all(essay0, "\n", " ")
+essay0 <- str_replace_all(essay0, "<br />", " ")
+
+male.essay0 <- subset(essay0, profiles$sex == "f")
+male.corpus <- Corpus(VectorSource(male.essay0))
+toSpace <- content_transformer(function(x, pattern) { return (gsub(pattern, " ",x))})
+male.corpus <- tm_map(male.corpus, toSpace, "<.*?>")
+male.corpus <- tm_map(male.corpus, removePunctuation)
+male.corpus <- tm_map(male.corpus, removeNumbers)
+male.corpus <- tm_map(male.corpus, removeWords, stopwords("english"))
+male.corpus <- tm_map(male.corpus, stripWhitespace)
+male.corpus <- tm_map(male.corpus, stemDocument)
+male.dtm <- DocumentTermMatrix(male.corpus)
+male.freq <- colSums(as.matrix(male.dtm))
+male.ord <- order(male.freq,decreasing=TRUE)
+male.ordfreq <- male.freq[male.ord]
+# write.csv(file="male_ordfreq.csv", x=male.ordfreq)
+
+female.essay0 <- subset(essay0, profiles$sex == "f")
+female.corpus <- Corpus(VectorSource(female.essay0))
+toSpace <- content_transformer(function(x, pattern) { return (gsub(pattern, " ",x))})
+female.corpus <- tm_map(female.corpus, toSpace, "<.*?>")
+female.corpus <- tm_map(female.corpus, removePunctuation)
+female.corpus <- tm_map(female.corpus, removeNumbers)
+female.corpus <- tm_map(female.corpus, removeWords, stopwords("english"))
+female.corpus <- tm_map(female.corpus, stripWhitespace)
+female.corpus <- tm_map(female.corpus, stemDocument)
+female.dtm <- DocumentTermMatrix(female.corpus)
+female.freq <- colSums(as.matrix(female.dtm))
+female.ord <- order(female.freq,decreasing=TRUE)
+female.ordfreq <- female.freq[female.ord]
+# write.csv(file="female_ordfreq.csv", x=female.ordfreq)
+
+merge.freq <- merge(male.freq,female.freq,by="row.names")
+write.csv(file="merge_ordfreq.csv", x=merge.freq)
